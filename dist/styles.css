@@ -300,6 +300,64 @@ button {
   color: var(--rival);
   font-size: 0.85rem;
 }
+.room-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+}
+.room-divider::before,
+.room-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+}
+.room-join-button {
+  background: var(--gold);
+  color: #251b00;
+}
+.text-button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+.room-lobby-dialog {
+  text-align: center;
+}
+.room-lobby-dialog > p:not(.dialog-kicker) {
+  color: var(--muted);
+}
+.room-code {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  border: 1px dashed var(--gold);
+  border-radius: 14px;
+  background: #ffd16612;
+  color: var(--gold);
+  font-size: 1.8rem;
+  font-weight: 950;
+  letter-spacing: 0.2em;
+}
+.room-status {
+  display: block;
+  margin: 14px 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.room-status--ready {
+  color: var(--player);
+}
 .arena {
   margin-top: 8px;
 }
