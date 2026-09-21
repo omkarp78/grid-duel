@@ -120,13 +120,22 @@
     document.body.classList.add("is-touring");
     requestAnimationFrame(renderTour);
   }
+  const guestView = () => gameMode === "online" && onlineRole === "guest";
+  const localWinner = (winner) =>
+    guestView() && winner !== "draw"
+      ? winner === "player"
+        ? "rival"
+        : "player"
+      : winner;
   function renderPieces() {
+    const myEnergy = guestView() ? match.rivalEnergy : match.playerEnergy;
+    const opponentEnergy = guestView() ? match.playerEnergy : match.rivalEnergy;
     $("rivalPieces").innerHTML = Array.from(
-      { length: match.rivalEnergy },
+      { length: opponentEnergy },
       () => '<i class="power-piece power-piece--rival">♟</i>',
     ).join("");
     $("playerPieces").innerHTML = Array.from(
-      { length: match.playerEnergy },
+      { length: myEnergy },
       (_, i) =>
         `<button class="power-piece ${i < selectedBid ? "power-piece--selected" : ""}" type="button" data-piece="${i + 1}" aria-label="Send ${i + 1} power">♟</button>`,
     ).join("");
@@ -143,6 +152,7 @@
   function renderTerritories() {
     $("territories").innerHTML = match.territories
       .map((owner, index) => {
+        owner = localWinner(owner);
         const active = match.status === "playing" && index === match.round;
         const label =
           owner === "player"
@@ -173,21 +183,32 @@
     $("historyList").innerHTML = [...match.history]
       .reverse()
       .map((item) => {
+        const winner = localWinner(item.winner);
         const text =
-          item.winner === "player"
+          winner === "player"
             ? "YOU WON"
             : item.winner === "rival"
               ? "RIVAL WON"
               : "DRAW";
-        return `<article class="history-row history-row--${item.winner}"><div class="history-label"><i>${item.winner === "draw" ? "—" : "◆"}</i><div><strong>Territory ${item.round}</strong><span>${text}</span></div></div><div class="history-bids"><b>${item.playerBid}</b> ♟ <i>vs</i> <b>${item.rivalBid}</b> ♟</div></article>`;
+        const myBid = guestView() ? item.rivalBid : item.playerBid;
+        const opponentBid = guestView() ? item.playerBid : item.rivalBid;
+        return `<article class="history-row history-row--${winner}"><div class="history-label"><i>${winner === "draw" ? "—" : "◆"}</i><div><strong>Territory ${item.round}</strong><span>${text}</span></div></div><div class="history-bids"><b>${myBid}</b> ♟ <i>vs</i> <b>${opponentBid}</b> ♟</div></article>`;
       })
       .join("");
   }
   function render() {
-    $("playerEnergy").textContent = match.playerEnergy;
-    $("rivalEnergy").textContent = match.rivalEnergy;
-    $("playerScore").textContent = match.playerScore;
-    $("rivalScore").textContent = match.rivalScore;
+    $("playerEnergy").textContent = guestView()
+      ? match.rivalEnergy
+      : match.playerEnergy;
+    $("rivalEnergy").textContent = guestView()
+      ? match.playerEnergy
+      : match.rivalEnergy;
+    $("playerScore").textContent = guestView()
+      ? match.rivalScore
+      : match.playerScore;
+    $("rivalScore").textContent = guestView()
+      ? match.playerScore
+      : match.rivalScore;
     const tiebreakRound = match.round - G.TOTAL_TERRITORIES + 1;
     $("roundLabel").textContent =
       match.status === "playing"
@@ -218,7 +239,8 @@
   }
   function setBid(value) {
     if (busy) return;
-    selectedBid = Math.min(match.playerEnergy, Math.max(0, value));
+    const myEnergy = guestView() ? match.rivalEnergy : match.playerEnergy;
+    selectedBid = Math.min(myEnergy, Math.max(0, value));
     tone("select");
     haptic(8);
     renderPieces();
@@ -482,14 +504,15 @@
         ? onlineResult.next
         : G.resolveBattle(match, playerBid, rivalBid);
     const last = match.history.at(-1),
+      viewedWinner = localWinner(last.winner),
       startedTiebreak = match.tiebreak && match.round === G.TOTAL_TERRITORIES;
-    $("battleResult").className = `battle-result--${last.winner}`;
-    if (last.winner === "player") {
+    $("battleResult").className = `battle-result--${viewedWinner}`;
+    if (viewedWinner === "player") {
       tone("win");
       haptic([15, 40, 25]);
       $("battleResult").textContent = "YOU WIN";
       announce("Territory captured", `${playerBid} pieces beat ${rivalBid}.`);
-    } else if (last.winner === "rival") {
+    } else if (viewedWinner === "rival") {
       tone("lose");
       haptic([30, 45, 30]);
       $("battleResult").textContent = "RIVAL WINS";
@@ -500,7 +523,7 @@
       $("battleResult").textContent = "DRAW";
       announce("Deadlock", `Both armies sent ${playerBid}.`);
     }
-    battleImpact(last.winner);
+    battleImpact(viewedWinner);
     selectedBid = 0;
     render();
     const cell = document.querySelector(`[data-territory="${last.round - 1}"]`);
@@ -549,13 +572,22 @@
     $("controlPanel").hidden = true;
     $("resultPanel").hidden = false;
     render();
-    const details = `Final score: You ${match.playerScore} — ${match.rivalScore} Rival`;
+    const myScore = guestView() ? match.rivalScore : match.playerScore;
+    const opponentScore = guestView() ? match.playerScore : match.rivalScore;
+    const localStatus = guestView()
+      ? match.status === "won"
+        ? "lost"
+        : match.status === "lost"
+          ? "won"
+          : "draw"
+      : match.status;
+    const details = `Final score: You ${myScore} — ${opponentScore} Rival`;
     const history = records();
-    history.unshift({ result: match.status, score: details, when: "Just now" });
+    history.unshift({ result: localStatus, score: details, when: "Just now" });
     localStorage.setItem(MATCHES_KEY, JSON.stringify(history.slice(0, 12)));
-    if (match.status === "won")
+    if (localStatus === "won")
       showOutcome("won", "VICTORY", "YOU WIN", details);
-    else if (match.status === "lost")
+    else if (localStatus === "lost")
       showOutcome("lost", "DEFEAT", "YOU LOST", details);
     else showOutcome("draw", "DRAW", "GRID DEADLOCK", details);
   }
