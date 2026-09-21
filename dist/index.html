@@ -247,16 +247,56 @@
       </div>
     </dialog>
     <dialog id="onlineDialog">
-      <form method="dialog">
+      <form id="onlineRoomForm">
         <h2>Online rooms</h2>
-        <p>
-          Real live rooms need a multiplayer server. The dashboard is ready;
-          I’ll connect this option once the game backend is added.
+        <p>Create a private room or enter a friend's 6-character code.</p>
+        <button class="primary-button" id="createRoomButton" type="button">
+          CREATE PRIVATE ROOM
+        </button>
+        <div class="room-divider"><span>OR JOIN</span></div>
+        <label class="name-field" for="roomCodeInput"
+          >ROOM CODE
+          <input
+            id="roomCodeInput"
+            maxlength="6"
+            autocomplete="off"
+            placeholder="ABC123"
+          />
+        </label>
+        <p class="field-help" id="roomHelp">
+          Ask your friend to share their room code.
         </p>
-        <div class="dialog-actions">
-          <button value="confirm">GOT IT</button>
-        </div>
+        <button class="primary-button room-join-button" type="submit">
+          JOIN ROOM
+        </button>
+        <button class="text-button" id="onlineClose" type="button">
+          CANCEL
+        </button>
       </form>
+    </dialog>
+    <dialog
+      class="room-lobby-dialog"
+      id="roomLobbyDialog"
+      aria-labelledby="roomLobbyTitle"
+    >
+      <p class="dialog-kicker">PRIVATE ROOM</p>
+      <h2 id="roomLobbyTitle">Waiting for your friend</h2>
+      <p>Share this room code:</p>
+      <button
+        class="room-code"
+        id="roomCodeDisplay"
+        type="button"
+        aria-label="Copy room code"
+      >
+        ------
+      </button>
+      <span class="room-status" id="roomStatus">Checking room…</span>
+      <button class="primary-button" id="copyRoomButton" type="button">
+        COPY INVITE CODE
+      </button>
+      <button class="text-button" id="leaveRoomButton" type="button">
+        LEAVE ROOM
+      </button>
     </dialog>
     <dialog
       class="profile-dialog"
