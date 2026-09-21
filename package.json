@@ -1,0 +1,8 @@
+{
+  "name": "grid-duel",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node -e \"console.log('Grid Duel static site is ready.')\""
+  }
+}
