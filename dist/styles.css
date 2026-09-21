@@ -265,6 +265,41 @@ button {
 .field-help--error {
   color: var(--rival);
 }
+.friend-turn-dialog {
+  text-align: center;
+}
+.friend-turn-dialog h2 {
+  margin: 6px 0 8px;
+}
+.friend-turn-dialog p:not(.dialog-kicker) {
+  color: var(--muted);
+  line-height: 1.45;
+}
+.friend-piece-rack {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 18px 0 12px;
+}
+.friend-piece {
+  aspect-ratio: 1;
+  border: 1px solid #ff796b6e;
+  border-radius: 10px;
+  background: #ff796b1c;
+  color: var(--rival);
+  font-size: 1rem;
+}
+.friend-piece--selected {
+  transform: translateY(-4px);
+  border-color: var(--rival);
+  background: #ff796b42;
+  box-shadow: 0 7px 18px #ff796b32;
+}
+.friend-selection {
+  display: block;
+  color: var(--rival);
+  font-size: 0.85rem;
+}
 .arena {
   margin-top: 8px;
 }
