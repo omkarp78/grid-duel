@@ -11,7 +11,23 @@
     audioContext;
   const PROFILE_KEY = "grid-duel-profile",
     MATCHES_KEY = "grid-duel-match-records";
+  const SUPABASE_URL = "https://xsrivyugohmiilcudamq.supabase.co",
+    SUPABASE_KEY = "sb_publishable_hFqjrbuicIk3a5VyG9v0Ww_5IWPK-JS";
+  let roomPoll = null;
+  let onlineCode = "",
+    onlineToken = "",
+    onlineRole = "";
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const newToken = () => crypto.randomUUID();
+  async function roomRpc(name, body) {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) throw new Error("Room request failed");
+    return response.json();
+  }
   const TOUR_KEY = "grid-duel-tour-complete";
   let tourIndex = 0;
   const tourSteps = [
@@ -285,11 +301,49 @@
     renderDashboard();
   }
   function openDashboard() {
+    clearInterval(roomPoll);
     history.pushState({ view: "dashboard" }, "", location.pathname);
     showDashboard();
   }
+  function showRoomError(message) {
+    $("roomHelp").textContent = message;
+    $("roomHelp").classList.add("field-help--error");
+  }
+  function openLobby(code, token, role) {
+    $("onlineDialog").close();
+    $("roomCodeDisplay").textContent = code;
+    $("roomStatus").textContent =
+      role === "host" ? "Waiting for Player 2…" : "Connected to Player 1";
+    $("roomLobbyDialog").showModal();
+    clearInterval(roomPoll);
+    roomPoll = setInterval(async () => {
+      try {
+        const rows = await roomRpc("get_room", {
+          p_code: code,
+          p_token: token,
+        });
+        if (rows[0]?.state?.status === "playing") {
+          clearInterval(roomPoll);
+          $("roomStatus").textContent = "Both players connected!";
+          $("roomStatus").classList.add("room-status--ready");
+          const url = `?play=online&room=${code}&token=${token}&role=${role}`;
+          setTimeout(() => {
+            $("roomLobbyDialog").close();
+            history.pushState({ view: "online" }, "", url);
+            startGame();
+          }, 700);
+        }
+      } catch {
+        $("roomStatus").textContent = "Connection lost. Retrying…";
+      }
+    }, 1200);
+  }
   function startGame() {
-    gameMode = new URLSearchParams(location.search).get("play") || "quick";
+    const params = new URLSearchParams(location.search);
+    gameMode = params.get("play") || "quick";
+    onlineCode = params.get("room") || "";
+    onlineToken = params.get("token") || "";
+    onlineRole = params.get("role") || "";
     $("dashboard").hidden = true;
     $("gameView").hidden = false;
     $("pageTitle").textContent = "Battle for the grid";
@@ -345,11 +399,70 @@
     );
     render();
   }
+  async function playOnlineRound(localBid) {
+    await roomRpc("submit_room_bid", {
+      p_code: onlineCode,
+      p_token: onlineToken,
+      p_bid: localBid,
+    });
+    const previousRounds = match.history.length;
+    for (let tries = 0; tries < 80; tries += 1) {
+      const rows = await roomRpc("get_room", {
+        p_code: onlineCode,
+        p_token: onlineToken,
+      });
+      const state = rows[0]?.state;
+      if (!state) throw new Error("Room closed");
+      if (state.match?.history?.length > previousRounds)
+        return {
+          hostBid: state.lastHostBid,
+          guestBid: state.lastGuestBid,
+          next: state.match,
+        };
+      if (
+        onlineRole === "host" &&
+        state.hostBid !== null &&
+        state.guestBid !== null
+      ) {
+        const next = G.resolveBattle(match, state.hostBid, state.guestBid);
+        const nextState = {
+          status: "playing",
+          hostBid: null,
+          guestBid: null,
+          lastHostBid: state.hostBid,
+          lastGuestBid: state.guestBid,
+          match: next,
+        };
+        await roomRpc("update_room_state", {
+          p_code: onlineCode,
+          p_host_token: onlineToken,
+          p_state: nextState,
+        });
+        return { hostBid: state.hostBid, guestBid: state.guestBid, next };
+      }
+      await wait(700);
+    }
+    throw new Error("Opponent did not respond");
+  }
   async function playRound() {
     if (busy || match.status !== "playing") return;
     busy = true;
     $("lockButton").disabled = true;
-    const playerBid = selectedBid,
+    const playerBid = selectedBid;
+    let rivalBid, onlineResult;
+    if (gameMode === "online") {
+      announce("Move locked", "Waiting for the other player…");
+      try {
+        onlineResult = await playOnlineRound(playerBid);
+      } catch {
+        announce("Connection problem", "Could not sync this move. Try again.");
+        busy = false;
+        $("lockButton").disabled = false;
+        return;
+      }
+      rivalBid =
+        onlineRole === "host" ? onlineResult.guestBid : onlineResult.hostBid;
+    } else
       rivalBid =
         gameMode === "friend" ? await getFriendBid() : G.chooseBotBid(match);
     tone("send");
@@ -364,7 +477,10 @@
     await wait(280);
     marchTokens("rivalMarch", rivalBid);
     await wait(600);
-    match = G.resolveBattle(match, playerBid, rivalBid);
+    match =
+      gameMode === "online"
+        ? onlineResult.next
+        : G.resolveBattle(match, playerBid, rivalBid);
     const last = match.history.at(-1),
       startedTiebreak = match.tiebreak && match.round === G.TOTAL_TERRITORIES;
     $("battleResult").className = `battle-result--${last.winner}`;
@@ -488,6 +604,46 @@
   $("onlineBattleButton").addEventListener("click", () =>
     $("onlineDialog").showModal(),
   );
+  $("onlineClose").addEventListener("click", () => $("onlineDialog").close());
+  $("createRoomButton").addEventListener("click", async () => {
+    $("createRoomButton").disabled = true;
+    try {
+      const token = newToken();
+      const rows = await roomRpc("create_room", { p_host_token: token });
+      if (!rows[0]) throw new Error();
+      openLobby(rows[0].code, token, "host");
+    } catch {
+      showRoomError("Could not create a room. Please try again.");
+    }
+    $("createRoomButton").disabled = false;
+  });
+  $("onlineRoomForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const code = $("roomCodeInput").value.trim().toUpperCase();
+    if (!/^[A-Z0-9]{6}$/.test(code))
+      return showRoomError("Enter a valid 6-character room code.");
+    try {
+      const token = newToken();
+      const rows = await roomRpc("join_room", {
+        p_code: code,
+        p_guest_token: token,
+      });
+      if (!rows[0]) return showRoomError("Room not found, full, or expired.");
+      openLobby(code, token, "guest");
+    } catch {
+      showRoomError("Could not join the room. Check your connection.");
+    }
+  });
+  const copyRoomCode = async () => {
+    await navigator.clipboard.writeText($("roomCodeDisplay").textContent);
+    $("copyRoomButton").textContent = "COPIED!";
+  };
+  $("copyRoomButton").addEventListener("click", copyRoomCode);
+  $("roomCodeDisplay").addEventListener("click", copyRoomCode);
+  $("leaveRoomButton").addEventListener("click", () => {
+    clearInterval(roomPoll);
+    $("roomLobbyDialog").close();
+  });
   $("historyDashboardButton").addEventListener("click", () => {
     $("dashboardHistory").hidden = false;
     $("dashboardHistory").scrollIntoView({
