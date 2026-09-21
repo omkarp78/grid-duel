@@ -9,5 +9,5 @@ state=G.resolveBattle(state,0,2);assert.equal(state.rivalScore,2);
 state=G.resolveBattle(state,0,1);assert.equal(state.status,'lost');
 assert.equal(G.clampBid(99,4),4);assert.equal(G.clampBid(-2,4),0);assert.equal(G.clampBid('x',4),0);
 for(let i=0;i<100;i++){const fresh=G.createMatch();const bid=G.chooseBotBid(fresh);assert.ok(bid>=0&&bid<=fresh.rivalEnergy)}
-let tied=G.createMatch();tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);assert.equal(tied.status,'playing');assert.equal(tied.tiebreak,true);assert.equal(tied.territories.length,8);
+let tied=G.createMatch();tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);assert.equal(tied.status,'playing');assert.equal(tied.tiebreak,true);assert.equal(tied.territories.length,8);assert.equal(tied.playerEnergy,G.TOTAL_ENERGY);assert.equal(tied.rivalEnergy,G.TOTAL_ENERGY);
 console.log('All game-engine tests passed.');
