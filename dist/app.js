@@ -122,7 +122,7 @@
   }
   const guestView = () => gameMode === "online" && onlineRole === "guest";
   const localWinner = (winner) =>
-    guestView() && winner !== "draw"
+    guestView() && (winner === "player" || winner === "rival")
       ? winner === "player"
         ? "rival"
         : "player"
@@ -187,7 +187,7 @@
         const text =
           winner === "player"
             ? "YOU WON"
-            : item.winner === "rival"
+            : winner === "rival"
               ? "RIVAL WON"
               : "DRAW";
         const myBid = guestView() ? item.rivalBid : item.playerBid;
