@@ -78,7 +78,7 @@
           </button>
           <button class="mode-card" id="friendBattleButton" type="button">
             <span>♙</span><b>Play with friend</b
-            ><small>Invite a friend in an online room</small>
+            ><small>Pass &amp; play on one device</small>
           </button>
           <button class="mode-card" id="onlineBattleButton" type="button">
             <span>⌁</span><b>Online rooms</b
@@ -213,12 +213,38 @@
     <dialog id="friendDialog">
       <form method="dialog">
         <h2>Play with a friend</h2>
-        <p>
-          Friend matches need a live room so both players can choose secretly on
-          their own devices. The dashboard is ready for this next phase.
-        </p>
-        <div class="dialog-actions"><button value="cancel">GOT IT</button></div>
+        <p>Both players choose secretly, one after another, on this device.</p>
+        <div class="dialog-actions">
+          <button value="cancel">CANCEL</button>
+          <button class="dialog-confirm" value="confirm">START MATCH</button>
+        </div>
       </form>
+    </dialog>
+    <dialog
+      class="friend-turn-dialog"
+      id="friendTurnDialog"
+      aria-labelledby="friendTurnTitle"
+    >
+      <div id="friendPassStep">
+        <p class="dialog-kicker">PLAYER 2 TURN</p>
+        <h2 id="friendTurnTitle">Pass the device</h2>
+        <p>
+          Player 1's choice is locked and hidden. Give the device to Player 2.
+        </p>
+        <button class="primary-button" id="friendReadyButton" type="button">
+          I'M PLAYER 2 · READY
+        </button>
+      </div>
+      <div id="friendChooseStep" hidden>
+        <p class="dialog-kicker">PLAYER 2</p>
+        <h2>Choose your pieces</h2>
+        <p>Your choice stays hidden until you send.</p>
+        <div class="friend-piece-rack" id="friendPieces"></div>
+        <strong class="friend-selection" id="friendBidValue">0 selected</strong>
+        <button class="primary-button" id="friendSendButton" type="button">
+          SEND 0 · SAVE POWER
+        </button>
+      </div>
     </dialog>
     <dialog id="onlineDialog">
       <form method="dialog">
