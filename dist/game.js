@@ -14,7 +14,7 @@
     const next={...state,playerEnergy:state.playerEnergy-p,rivalEnergy:state.rivalEnergy-r,playerScore:state.playerScore+(winner==='player'?1:0),rivalScore:state.rivalScore+(winner==='rival'?1:0),territories:[...state.territories],history:[...state.history,{round:state.round+1,playerBid:p,rivalBid:r,winner}]};
     next.territories[state.round]=winner;
     const played=state.round+1,total=state.territories.length,remaining=total-played;
-    if(played===TOTAL_TERRITORIES&&total===TOTAL_TERRITORIES&&next.playerScore===next.rivalScore){next.territories.push(...Array(TIEBREAK_TERRITORIES).fill(null));next.tiebreak=true;next.round=played;return next}
+    if(played===TOTAL_TERRITORIES&&total===TOTAL_TERRITORIES&&next.playerScore===next.rivalScore){next.territories.push(...Array(TIEBREAK_TERRITORIES).fill(null));next.playerEnergy=TOTAL_ENERGY;next.rivalEnergy=TOTAL_ENERGY;next.tiebreak=true;next.round=played;return next}
     const decided=next.playerScore>=TARGET_SCORE||next.rivalScore>=TARGET_SCORE||Math.abs(next.playerScore-next.rivalScore)>remaining||played===total;
     if(decided){next.status=next.playerScore>next.rivalScore?'won':next.rivalScore>next.playerScore?'lost':'draw'}else next.round=state.round+1;
     return next;
