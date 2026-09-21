@@ -16,6 +16,7 @@
         <h1>Battle for the grid</h1>
       </div>
       <div class="top-actions">
+        <button class="icon-button help-button" id="helpButton" type="button" aria-label="How to play">?</button>
         <button class="icon-button" id="soundButton" type="button" aria-label="Turn sound on" aria-pressed="false">♬</button>
         <button class="icon-button" id="restartButton" type="button" aria-label="Start a new match">↻</button>
       </div>
@@ -82,6 +83,18 @@
       </div>
     </form>
   </dialog>
+  <dialog class="help-dialog" id="helpDialog" aria-labelledby="helpTitle">
+    <button class="defeat-close" id="helpClose" type="button" aria-label="Close help">×</button>
+    <p class="dialog-kicker">HOW TO PLAY</p>
+    <h2 id="helpTitle">Capture the grid</h2>
+    <ol class="rules-list">
+      <li>Choose how many of your 10 pieces to send.</li>
+      <li>Press <b>SEND</b>. The rival chooses secretly too.</li>
+      <li>Higher number captures the territory. First to 3 wins.</li>
+      <li>If the first 5 territories tie, both armies refill for 3 more.</li>
+    </ol>
+    <button class="primary-button" id="startTourButton" type="button">SHOW ME HOW</button>
+  </dialog>
   <dialog class="defeat-dialog" id="outcomeDialog" aria-labelledby="outcomeTitle">
     <button class="defeat-close" id="outcomeClose" type="button" aria-label="Close result">×</button>
     <div class="defeat-icon" id="outcomeIcon" aria-hidden="true">↘</div>
@@ -89,6 +102,18 @@
     <h2 id="outcomeTitle">YOU LOST</h2>
     <span id="outcomeScore">The rival captured the grid.</span>
   </dialog>
+  <div class="tour-overlay" id="tourOverlay" hidden aria-live="polite">
+    <div class="tour-highlight" id="tourHighlight"></div>
+    <section class="tour-card" id="tourCard">
+      <span id="tourStep">1 / 4</span>
+      <h2 id="tourTitle">The grid</h2>
+      <p id="tourText">Win territories to control the grid.</p>
+      <div class="tour-actions">
+        <button id="skipTourButton" type="button">SKIP</button>
+        <button class="tour-next" id="nextTourButton" type="button">NEXT</button>
+      </div>
+    </section>
+  </div>
   <script src="game.js"></script>
   <script src="app.js"></script>
 </body>
