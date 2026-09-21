@@ -1,156 +1,331 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b0d10">
-  <meta name="description" content="A fast strategy game of prediction, restraint, and hidden power.">
-  <title>Grid Duel</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <main class="app-shell">
-    <header class="topbar">
-      <button class="brand-button" id="dashboardButton" type="button" aria-label="Open dashboard">
-        <p class="eyebrow">GRID DUEL</p>
-        <h1 id="pageTitle">Command center</h1>
-      </button>
-      <div class="top-actions">
-        <button class="icon-button help-button" id="helpButton" type="button" aria-label="How to play">?</button>
-        <button class="icon-button" id="soundButton" type="button" aria-label="Turn sound on" aria-pressed="false">♬</button>
-        <button class="icon-button" id="restartButton" type="button" aria-label="Start a new match">↻</button>
-      </div>
-    </header>
-
-    <section class="dashboard" id="dashboard" aria-labelledby="dashboardTitle">
-      <div class="welcome-card">
-        <p class="eyebrow">READY TO BATTLE</p>
-        <h2 id="dashboardTitle">Choose your match</h2>
-        <p>Capture the grid, spend your power wisely, and build your record.</p>
-      </div>
-      <div class="mode-grid">
-        <button class="mode-card mode-card--featured" id="quickBattleButton" type="button"><span>◎</span><b>Quick battle</b><small>Play against the rival bot</small></button>
-        <button class="mode-card" id="friendBattleButton" type="button"><span>♙</span><b>Play with friend</b><small>Invite a friend in an online room</small></button>
-        <button class="mode-card" id="onlineBattleButton" type="button"><span>⌁</span><b>Online rooms</b><small>Create or join a room soon</small></button>
-        <button class="mode-card" id="historyDashboardButton" type="button"><span>▤</span><b>Battle history</b><small>Your latest local matches</small></button>
-      </div>
-      <section class="profile-card" aria-label="Player profile">
-        <div class="avatar" aria-hidden="true">G</div>
-        <div><span>PLAYER PROFILE</span><strong id="playerName">Grid Commander</strong><small id="profileStats">0 wins · 0 matches</small></div>
-        <button id="editNameButton" type="button" aria-label="Edit player name">✎</button>
-      </section>
-      <section class="dashboard-history" id="dashboardHistory" hidden>
-        <div class="section-line"><h2>RECENT BATTLES</h2><span>LOCAL</span></div>
-        <div id="dashboardHistoryList"></div>
-      </section>
-    </section>
-
-    <section id="gameView" hidden>
-
-    <section class="arena" id="arena" aria-labelledby="roundLabel">
-      <div class="section-line">
-        <h2>THE GRID</h2>
-        <span id="roundLabel">ROUND 1 / 5</span>
-      </div>
-      <div class="territories" id="territories"></div>
-    </section>
-
-    <section class="battle-board" id="battleBoard" aria-label="Power battle board">
-      <div class="army army--rival">
-        <div class="army-heading"><span>RIVAL ARMY</span><strong><span id="rivalEnergy">10</span> LEFT · <span id="rivalScore">0</span>/3</strong></div>
-        <div class="piece-rack piece-rack--rival" id="rivalPieces" aria-label="Rival remaining power"></div>
-      </div>
-      <div class="march-zone" id="marchZone">
-        <div class="march-line march-line--rival" id="rivalMarch"></div>
-        <div class="active-ground">
-          <span id="activeTerritoryNumber">TERRITORY 1</span>
-          <strong id="battleResult">VS</strong>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0b0d10" />
+    <meta
+      name="description"
+      content="A fast strategy game of prediction, restraint, and hidden power."
+    />
+    <title>Grid Duel</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <button
+          class="brand-button"
+          id="dashboardButton"
+          type="button"
+          aria-label="Open dashboard"
+        >
+          <p class="eyebrow">GRID DUEL</p>
+          <h1 id="pageTitle">Command center</h1>
+        </button>
+        <div class="top-actions">
+          <button
+            class="icon-button help-button"
+            id="helpButton"
+            type="button"
+            aria-label="How to play"
+          >
+            ?
+          </button>
+          <button
+            class="icon-button"
+            id="soundButton"
+            type="button"
+            aria-label="Turn sound on"
+            aria-pressed="false"
+          >
+            ♬
+          </button>
+          <button
+            class="icon-button"
+            id="restartButton"
+            type="button"
+            aria-label="Start a new match"
+          >
+            ↻
+          </button>
         </div>
-        <div class="march-line march-line--player" id="playerMarch"></div>
-      </div>
-      <div class="army army--player">
-        <div class="army-heading"><span>YOUR ARMY</span><strong><span id="playerEnergy">10</span> LEFT · <span id="playerScore">0</span>/3</strong></div>
-        <div class="piece-rack" id="playerPieces" aria-label="Choose power to send"></div>
-      </div>
-    </section>
+      </header>
 
-    <section class="announcement" id="announcement" aria-live="polite">
-      <strong id="announcementTitle">Choose your power</strong>
-      <span id="announcementText">Your rival chooses in secret.</span>
-    </section>
+      <section
+        class="dashboard"
+        id="dashboard"
+        aria-labelledby="dashboardTitle"
+      >
+        <div class="welcome-card">
+          <p class="eyebrow">READY TO BATTLE</p>
+          <h2 id="dashboardTitle">Choose your match</h2>
+          <p>
+            Capture the grid, spend your power wisely, and build your record.
+          </p>
+        </div>
+        <div class="mode-grid">
+          <button
+            class="mode-card mode-card--featured"
+            id="quickBattleButton"
+            type="button"
+          >
+            <span>◎</span><b>Quick battle</b
+            ><small>Play against the rival bot</small>
+          </button>
+          <button class="mode-card" id="friendBattleButton" type="button">
+            <span>♙</span><b>Play with friend</b
+            ><small>Invite a friend in an online room</small>
+          </button>
+          <button class="mode-card" id="onlineBattleButton" type="button">
+            <span>⌁</span><b>Online rooms</b
+            ><small>Create or join a room soon</small>
+          </button>
+          <button class="mode-card" id="historyDashboardButton" type="button">
+            <span>▤</span><b>Battle history</b
+            ><small>Your latest local matches</small>
+          </button>
+        </div>
+        <section class="profile-card" aria-label="Player profile">
+          <div class="avatar" id="playerAvatar" aria-hidden="true">G</div>
+          <div>
+            <span>PLAYER PROFILE</span
+            ><strong id="playerName">Grid Commander</strong
+            ><small id="profileStats">0 wins · 0 matches</small>
+          </div>
+          <button
+            id="editNameButton"
+            type="button"
+            aria-label="Edit player name"
+          >
+            ✎
+          </button>
+        </section>
+        <section class="dashboard-history" id="dashboardHistory" hidden>
+          <div class="section-line">
+            <h2>RECENT BATTLES</h2>
+            <span>LOCAL</span>
+          </div>
+          <div id="dashboardHistoryList"></div>
+        </section>
+      </section>
 
-    <section class="control-panel" id="controlPanel">
-      <div class="bid-heading">
-        <div><span>SELECT YOUR PIECES</span><small>Tap your army pieces, then send</small></div>
-        <strong id="bidValue">0 selected</strong>
-      </div>
-      <button class="primary-button" id="lockButton" type="button">SEND 0 · SAVE POWER</button>
-    </section>
+      <section id="gameView" hidden>
+        <section class="arena" id="arena" aria-labelledby="roundLabel">
+          <div class="section-line">
+            <h2>THE GRID</h2>
+            <span id="roundLabel">ROUND 1 / 5</span>
+          </div>
+          <div class="territories" id="territories"></div>
+        </section>
 
-    <section class="history-section" id="historySection" hidden>
-      <div class="section-line"><h2>BATTLE HISTORY</h2><span>⚡ SPENT</span></div>
-      <div class="history-list" id="historyList"></div>
-    </section>
+        <section
+          class="battle-board"
+          id="battleBoard"
+          aria-label="Power battle board"
+        >
+          <div class="army army--rival">
+            <div class="army-heading">
+              <span>RIVAL ARMY</span
+              ><strong
+                ><span id="rivalEnergy">10</span> LEFT ·
+                <span id="rivalScore">0</span>/3</strong
+              >
+            </div>
+            <div
+              class="piece-rack piece-rack--rival"
+              id="rivalPieces"
+              aria-label="Rival remaining power"
+            ></div>
+          </div>
+          <div class="march-zone" id="marchZone">
+            <div class="march-line march-line--rival" id="rivalMarch"></div>
+            <div class="active-ground">
+              <span id="activeTerritoryNumber">TERRITORY 1</span>
+              <strong id="battleResult">VS</strong>
+            </div>
+            <div class="march-line march-line--player" id="playerMarch"></div>
+          </div>
+          <div class="army army--player">
+            <div class="army-heading">
+              <span>YOUR ARMY</span
+              ><strong
+                ><span id="playerEnergy">10</span> LEFT ·
+                <span id="playerScore">0</span>/3</strong
+              >
+            </div>
+            <div
+              class="piece-rack"
+              id="playerPieces"
+              aria-label="Choose power to send"
+            ></div>
+          </div>
+        </section>
 
-    <section class="result-panel" id="resultPanel" hidden>
-      <button class="primary-button" id="playAgainButton" type="button">PLAY AGAIN</button>
-    </section>
-    </section>
-  </main>
-  <div class="screen-flash" id="screenFlash" aria-hidden="true"></div>
+        <section class="announcement" id="announcement" aria-live="polite">
+          <strong id="announcementTitle">Choose your power</strong>
+          <span id="announcementText">Your rival chooses in secret.</span>
+        </section>
 
-  <dialog id="restartDialog">
-    <form method="dialog">
-      <h2>Start a new match?</h2>
-      <p>Your current battle history will be cleared.</p>
-      <div class="dialog-actions">
-        <button value="cancel">KEEP PLAYING</button>
-        <button class="dialog-confirm" value="confirm">NEW MATCH</button>
-      </div>
-    </form>
-  </dialog>
-  <dialog id="friendDialog">
-    <form method="dialog">
-      <h2>Play with a friend</h2>
-      <p>Friend matches need a live room so both players can choose secretly on their own devices. The dashboard is ready for this next phase.</p>
-      <div class="dialog-actions"><button value="cancel">GOT IT</button></div>
-    </form>
-  </dialog>
-  <dialog id="onlineDialog">
-    <form method="dialog"><h2>Online rooms</h2><p>Real live rooms need a multiplayer server. The dashboard is ready; I’ll connect this option once the game backend is added.</p><div class="dialog-actions"><button value="confirm">GOT IT</button></div></form>
-  </dialog>
-  <section class="help-dialog" id="helpDialog" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
-    <button class="defeat-close" id="helpClose" type="button" aria-label="Close help">×</button>
-    <p class="dialog-kicker">HOW TO PLAY</p>
-    <h2 id="helpTitle">Capture the grid</h2>
-    <ol class="rules-list">
-      <li>Choose how many of your 10 pieces to send.</li>
-      <li>Press <b>SEND</b>. The rival chooses secretly too.</li>
-      <li>Higher number captures the territory. First to 3 wins.</li>
-      <li>If the first 5 territories tie, both armies refill for 3 more.</li>
-    </ol>
-    <button class="primary-button" id="startTourButton" type="button">SHOW ME HOW</button>
-  </section>
-  <dialog class="defeat-dialog" id="outcomeDialog" aria-labelledby="outcomeTitle">
-    <button class="defeat-close" id="outcomeClose" type="button" aria-label="Close result">×</button>
-    <div class="defeat-icon" id="outcomeIcon" aria-hidden="true">↘</div>
-    <p id="outcomeKicker">DEFEAT</p>
-    <h2 id="outcomeTitle">YOU LOST</h2>
-    <span id="outcomeScore">The rival captured the grid.</span>
-  </dialog>
-  <div class="tour-overlay" id="tourOverlay" hidden aria-live="polite">
-    <div class="tour-highlight" id="tourHighlight"></div>
-    <section class="tour-card" id="tourCard">
-      <span id="tourStep">1 / 4</span>
-      <h2 id="tourTitle">The grid</h2>
-      <p id="tourText">Win territories to control the grid.</p>
-      <div class="tour-actions">
-        <button id="skipTourButton" type="button">SKIP</button>
-        <button class="tour-next" id="nextTourButton" type="button">NEXT</button>
-      </div>
+        <section class="control-panel" id="controlPanel">
+          <div class="bid-heading">
+            <div>
+              <span>SELECT YOUR PIECES</span
+              ><small>Tap your army pieces, then send</small>
+            </div>
+            <strong id="bidValue">0 selected</strong>
+          </div>
+          <button class="primary-button" id="lockButton" type="button">
+            SEND 0 · SAVE POWER
+          </button>
+        </section>
+
+        <section class="history-section" id="historySection" hidden>
+          <div class="section-line">
+            <h2>BATTLE HISTORY</h2>
+            <span>⚡ SPENT</span>
+          </div>
+          <div class="history-list" id="historyList"></div>
+        </section>
+
+        <section class="result-panel" id="resultPanel" hidden>
+          <button class="primary-button" id="playAgainButton" type="button">
+            PLAY AGAIN
+          </button>
+        </section>
+      </section>
+    </main>
+    <div class="screen-flash" id="screenFlash" aria-hidden="true"></div>
+
+    <dialog id="restartDialog">
+      <form method="dialog">
+        <h2>Start a new match?</h2>
+        <p>Your current battle history will be cleared.</p>
+        <div class="dialog-actions">
+          <button value="cancel">KEEP PLAYING</button>
+          <button class="dialog-confirm" value="confirm">NEW MATCH</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="friendDialog">
+      <form method="dialog">
+        <h2>Play with a friend</h2>
+        <p>
+          Friend matches need a live room so both players can choose secretly on
+          their own devices. The dashboard is ready for this next phase.
+        </p>
+        <div class="dialog-actions"><button value="cancel">GOT IT</button></div>
+      </form>
+    </dialog>
+    <dialog id="onlineDialog">
+      <form method="dialog">
+        <h2>Online rooms</h2>
+        <p>
+          Real live rooms need a multiplayer server. The dashboard is ready;
+          I’ll connect this option once the game backend is added.
+        </p>
+        <div class="dialog-actions">
+          <button value="confirm">GOT IT</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog
+      class="profile-dialog"
+      id="profileDialog"
+      aria-labelledby="profileDialogTitle"
+    >
+      <form id="profileForm">
+        <button
+          class="defeat-close"
+          id="profileClose"
+          type="button"
+          aria-label="Close profile editor"
+        >
+          ×
+        </button>
+        <p class="dialog-kicker">PLAYER PROFILE</p>
+        <h2 id="profileDialogTitle">Choose your battle name</h2>
+        <label class="name-field" for="playerNameInput"
+          >DISPLAY NAME
+          <input
+            id="playerNameInput"
+            name="playerName"
+            maxlength="20"
+            autocomplete="nickname"
+            placeholder="Grid Commander"
+            required
+          />
+        </label>
+        <p class="field-help" id="nameHelp">
+          Use 2–20 letters, numbers, or spaces.
+        </p>
+        <button class="primary-button" type="submit">SAVE NAME</button>
+      </form>
+    </dialog>
+    <section
+      class="help-dialog"
+      id="helpDialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="helpTitle"
+      hidden
+    >
+      <button
+        class="defeat-close"
+        id="helpClose"
+        type="button"
+        aria-label="Close help"
+      >
+        ×
+      </button>
+      <p class="dialog-kicker">HOW TO PLAY</p>
+      <h2 id="helpTitle">Capture the grid</h2>
+      <ol class="rules-list">
+        <li>Choose how many of your 10 pieces to send.</li>
+        <li>Press <b>SEND</b>. The rival chooses secretly too.</li>
+        <li>Higher number captures the territory. First to 3 wins.</li>
+        <li>If the first 5 territories tie, both armies refill for 3 more.</li>
+      </ol>
+      <button class="primary-button" id="startTourButton" type="button">
+        SHOW ME HOW
+      </button>
     </section>
-  </div>
-  <script src="game.js"></script>
-  <script src="app.js"></script>
-</body>
+    <dialog
+      class="defeat-dialog"
+      id="outcomeDialog"
+      aria-labelledby="outcomeTitle"
+    >
+      <button
+        class="defeat-close"
+        id="outcomeClose"
+        type="button"
+        aria-label="Close result"
+      >
+        ×
+      </button>
+      <div class="defeat-icon" id="outcomeIcon" aria-hidden="true">↘</div>
+      <p id="outcomeKicker">DEFEAT</p>
+      <h2 id="outcomeTitle">YOU LOST</h2>
+      <span id="outcomeScore">The rival captured the grid.</span>
+    </dialog>
+    <div class="tour-overlay" id="tourOverlay" hidden aria-live="polite">
+      <div class="tour-highlight" id="tourHighlight"></div>
+      <section class="tour-card" id="tourCard">
+        <span id="tourStep">1 / 4</span>
+        <h2 id="tourTitle">The grid</h2>
+        <p id="tourText">Win territories to control the grid.</p>
+        <div class="tour-actions">
+          <button id="skipTourButton" type="button">SKIP</button>
+          <button class="tour-next" id="nextTourButton" type="button">
+            NEXT
+          </button>
+        </div>
+      </section>
+    </div>
+    <script src="game.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>
