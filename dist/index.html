@@ -83,7 +83,7 @@
       </div>
     </form>
   </dialog>
-  <dialog class="help-dialog" id="helpDialog" aria-labelledby="helpTitle">
+  <section class="help-dialog" id="helpDialog" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
     <button class="defeat-close" id="helpClose" type="button" aria-label="Close help">×</button>
     <p class="dialog-kicker">HOW TO PLAY</p>
     <h2 id="helpTitle">Capture the grid</h2>
@@ -94,7 +94,7 @@
       <li>If the first 5 territories tie, both armies refill for 3 more.</li>
     </ol>
     <button class="primary-button" id="startTourButton" type="button">SHOW ME HOW</button>
-  </dialog>
+  </section>
   <dialog class="defeat-dialog" id="outcomeDialog" aria-labelledby="outcomeTitle">
     <button class="defeat-close" id="outcomeClose" type="button" aria-label="Close result">×</button>
     <div class="defeat-icon" id="outcomeIcon" aria-hidden="true">↘</div>
