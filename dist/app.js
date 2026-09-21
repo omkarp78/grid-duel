@@ -4,6 +4,9 @@
   let match = G.createMatch(),
     selectedBid = 0,
     busy = false,
+    gameMode = "quick",
+    friendBidResolve = null,
+    friendBid = 0,
     soundOn = localStorage.getItem("grid-duel-sound") === "on",
     audioContext;
   const PROFILE_KEY = "grid-duel-profile",
@@ -286,13 +289,43 @@
     showDashboard();
   }
   function startGame() {
-    if (!new URLSearchParams(location.search).has("play"))
-      history.pushState({ view: "quick" }, "", "?play=quick");
+    gameMode = new URLSearchParams(location.search).get("play") || "quick";
     $("dashboard").hidden = true;
     $("gameView").hidden = false;
     $("pageTitle").textContent = "Battle for the grid";
     reset();
     if (!localStorage.getItem(TOUR_KEY)) setTimeout(startTour, 300);
+  }
+  function openGame(mode) {
+    history.pushState({ view: mode }, "", `?play=${mode}`);
+    startGame();
+  }
+  function getFriendBid() {
+    friendBid = 0;
+    $("friendPassStep").hidden = false;
+    $("friendChooseStep").hidden = true;
+    $("friendTurnDialog").showModal();
+    return new Promise((resolve) => (friendBidResolve = resolve));
+  }
+  function renderFriendPieces() {
+    $("friendPieces").innerHTML = Array.from(
+      { length: match.rivalEnergy },
+      (_, i) =>
+        `<button class="friend-piece ${i < friendBid ? "friend-piece--selected" : ""}" type="button" data-friend-piece="${i + 1}">♟</button>`,
+    ).join("");
+    $("friendPieces")
+      .querySelectorAll("[data-friend-piece]")
+      .forEach((piece) =>
+        piece.addEventListener("click", () => {
+          const value = +piece.dataset.friendPiece;
+          friendBid = value === friendBid ? 0 : value;
+          $("friendBidValue").textContent = `${friendBid} selected`;
+          $("friendSendButton").textContent = friendBid
+            ? `SEND ${friendBid} ${friendBid === 1 ? "PIECE" : "PIECES"} ↓`
+            : "SEND 0 · SAVE POWER";
+          renderFriendPieces();
+        }),
+      );
   }
   function reset() {
     if ($("outcomeDialog").open) $("outcomeDialog").close();
@@ -317,10 +350,16 @@
     busy = true;
     $("lockButton").disabled = true;
     const playerBid = selectedBid,
-      rivalBid = G.chooseBotBid(match);
+      rivalBid =
+        gameMode === "friend" ? await getFriendBid() : G.chooseBotBid(match);
     tone("send");
     haptic(14);
-    announce("Army sent", "The rival is moving too…");
+    announce(
+      "Army sent",
+      gameMode === "friend"
+        ? "Player 2 is moving too…"
+        : "The rival is moving too…",
+    );
     marchTokens("playerMarch", playerBid);
     await wait(280);
     marchTokens("rivalMarch", rivalBid);
@@ -442,7 +481,7 @@
     if ($("restartDialog").returnValue === "confirm") reset();
   });
   $("dashboardButton").addEventListener("click", openDashboard);
-  $("quickBattleButton").addEventListener("click", startGame);
+  $("quickBattleButton").addEventListener("click", () => openGame("quick"));
   $("friendBattleButton").addEventListener("click", () =>
     $("friendDialog").showModal(),
   );
@@ -482,8 +521,24 @@
     renderDashboard();
   });
   $("friendDialog").addEventListener("close", () => {
-    if ($("friendDialog").returnValue === "confirm") startGame();
+    if ($("friendDialog").returnValue === "confirm") openGame("friend");
   });
+  $("friendReadyButton").addEventListener("click", () => {
+    $("friendPassStep").hidden = true;
+    $("friendChooseStep").hidden = false;
+    $("friendBidValue").textContent = "0 selected";
+    $("friendSendButton").textContent = "SEND 0 · SAVE POWER";
+    renderFriendPieces();
+  });
+  $("friendSendButton").addEventListener("click", () => {
+    $("friendTurnDialog").close();
+    const resolve = friendBidResolve;
+    friendBidResolve = null;
+    resolve?.(friendBid);
+  });
+  $("friendTurnDialog").addEventListener("cancel", (event) =>
+    event.preventDefault(),
+  );
   syncSound();
   window.addEventListener("popstate", () =>
     new URLSearchParams(location.search).has("play")
