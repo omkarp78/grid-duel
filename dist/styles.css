@@ -105,7 +105,7 @@ button {
   text-align: left;
   cursor: pointer;
 }
-.brand-logo{display:block;width:82px;height:auto}.brand-page{max-width:124px;color:var(--text);font-size:.83rem;font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.brand-logo{display:block;width:110px;height:auto;flex:0 0 auto}.brand-page{max-width:110px;color:var(--text);font-size:.8rem;font-weight:800;line-height:1.05;letter-spacing:-.02em}
 .dashboard {
   display: grid;
   gap: 14px;
