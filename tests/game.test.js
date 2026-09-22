@@ -10,4 +10,9 @@ state=G.resolveBattle(state,0,1);assert.equal(state.status,'lost');
 assert.equal(G.clampBid(99,4),4);assert.equal(G.clampBid(-2,4),0);assert.equal(G.clampBid('x',4),0);
 for(let i=0;i<100;i++){const fresh=G.createMatch();const bid=G.chooseBotBid(fresh);assert.ok(bid>=0&&bid<=fresh.rivalEnergy)}
 let tied=G.createMatch();tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);tied=G.resolveBattle(tied,1,1);assert.equal(tied.status,'playing');assert.equal(tied.tiebreak,true);assert.equal(tied.territories.length,8);assert.equal(tied.playerEnergy,G.TOTAL_ENERGY);assert.equal(tied.rivalEnergy,G.TOTAL_ENERGY);
+// A tiebreak must always play all 3 extra territories. Losing the first one
+// must not finish the game, even though the rival reaches 3 total wins.
+tied=G.resolveBattle(tied,0,1);assert.equal(tied.status,'playing');assert.equal(tied.round,6);assert.equal(tied.rivalScore,1);
+tied=G.resolveBattle(tied,1,0);assert.equal(tied.status,'playing');assert.equal(tied.round,7);assert.equal(tied.playerScore,1);
+tied=G.resolveBattle(tied,1,0);assert.equal(tied.status,'won');assert.equal(tied.round,7);assert.equal(tied.playerScore,2);assert.equal(tied.rivalScore,1);
 console.log('All game-engine tests passed.');
