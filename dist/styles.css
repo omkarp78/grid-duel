@@ -95,6 +95,9 @@ button {
   color: var(--player);
 }
 .brand-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -102,6 +105,7 @@ button {
   text-align: left;
   cursor: pointer;
 }
+.brand-logo{display:block;width:82px;height:auto}.brand-page{max-width:124px;color:var(--text);font-size:.83rem;font-weight:800;line-height:1.05;letter-spacing:-.02em}
 .dashboard {
   display: grid;
   gap: 14px;
