@@ -591,6 +591,44 @@
       showOutcome("lost", "DEFEAT", "YOU LOST", details);
     else showOutcome("draw", "DRAW", "GRID DEADLOCK", details);
   }
+  let deferredInstallPrompt = null;
+  const installDismissedRecently = () => {
+    const dismissedAt = Number(localStorage.getItem("grid-duel-install-dismissed") || 0);
+    return Date.now() - dismissedAt < 7 * 24 * 60 * 60 * 1000;
+  };
+  const isInstalled = () =>
+    window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const showInstallBanner = () => {
+    if (!isInstalled() && !installDismissedRecently()) $("installBanner").hidden = false;
+  };
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    setTimeout(showInstallBanner, 1200);
+  });
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    $("installBanner").hidden = true;
+  });
+  $("installButton").addEventListener("click", async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      $("installBanner").hidden = true;
+      return;
+    }
+    $("installText").textContent = "On iPhone: tap Share, then Add to Home Screen.";
+    $("installButton").textContent = "GOT IT";
+  });
+  $("installClose").addEventListener("click", () => {
+    localStorage.setItem("grid-duel-install-dismissed", String(Date.now()));
+    $("installBanner").hidden = true;
+  });
+  if ("serviceWorker" in navigator)
+    window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !isInstalled())
+    setTimeout(showInstallBanner, 1800);
   $("lockButton").addEventListener("click", playRound);
   $("playAgainButton").addEventListener("click", reset);
   $("outcomeClose").addEventListener("click", () => $("outcomeDialog").close());
