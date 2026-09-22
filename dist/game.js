@@ -15,7 +15,11 @@
     next.territories[state.round]=winner;
     const played=state.round+1,total=state.territories.length,remaining=total-played;
     if(played===TOTAL_TERRITORIES&&total===TOTAL_TERRITORIES&&next.playerScore===next.rivalScore){next.territories.push(...Array(TIEBREAK_TERRITORIES).fill(null));next.playerEnergy=TOTAL_ENERGY;next.rivalEnergy=TOTAL_ENERGY;next.tiebreak=true;next.round=played;return next}
-    const decided=next.playerScore>=TARGET_SCORE||next.rivalScore>=TARGET_SCORE||Math.abs(next.playerScore-next.rivalScore)>remaining||played===total;
+    // A tiebreak is always three complete extra territories. Do not end it
+    // early just because either side reaches the normal target score of 3.
+    const decided=state.tiebreak
+      ? played===total
+      : next.playerScore>=TARGET_SCORE||next.rivalScore>=TARGET_SCORE||Math.abs(next.playerScore-next.rivalScore)>remaining||played===total;
     if(decided){next.status=next.playerScore>next.rivalScore?'won':next.rivalScore>next.playerScore?'lost':'draw'}else next.round=state.round+1;
     return next;
   }
